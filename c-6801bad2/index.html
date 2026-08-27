@@ -326,8 +326,10 @@ function render(){
  $('rg-hi').textContent=yen(rHi.owner); $('rg-hi').style.color='var(--good)';
  $('rg-mid').textContent=yen(r.owner);
  const gnote=$('rg-note');
+ const ownerFlat=Math.abs(rHi.owner-rLo.owner)<1, backFlat=Math.abs(rHi.back-rLo.back)<1;
  if(sbHi-sbLo<0.0005)gnote.textContent='※ シャンパン・ボトル比率の「下限」と「上限」が同じ値（幅0）です。詳細設定→売上構成 で比率に幅（例 8〜30%）を入れると、ここに上限/下限の差が出ます。';
- else if(Math.abs(rHi.owner-rLo.owner)<1)gnote.textContent='※ 通常ドリンクとシャンパン・ボトルのバック率が同じため、オーダーが偏っても利益は変わりません（詳細設定のバック率をご確認ください）。';
+ else if(ownerFlat&&!backFlat)gnote.textContent='※ 大入りバックの配分（キャスト%＋店長%）が合計100%のため、利益の増減はすべて大入りで分配され、オーナー取り分は「店舗資金プール」で固定です。オーダーの偏りをオーナー取り分に反映したいときは、詳細設定→大入り で「→ 残り(オーナー)」が0%より大きくなるよう、キャスト%＋店長%を100%未満にしてください。';
+ else if(ownerFlat&&backFlat)gnote.textContent='※ 通常ドリンクとシャンパン・ボトルのバック率が同じため、オーダーが偏っても利益は変わりません（詳細設定のバック率をご確認ください）。';
  else gnote.textContent='';
  const rr=[['オーナー取り分',rLo.owner,r.owner,rHi.owner,true],
            ['キャスト合計',rLo.cast,r.cast,rHi.cast,true],
