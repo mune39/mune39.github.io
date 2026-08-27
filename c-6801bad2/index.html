@@ -326,14 +326,16 @@ function render(){
  $('rg-hi').textContent=yen(rHi.owner); $('rg-hi').style.color='var(--good)';
  $('rg-mid').textContent=yen(r.owner);
  const gnote=$('rg-note');
- const ownerFlat=Math.abs(rHi.owner-rLo.owner)<1, backFlat=Math.abs(rHi.back-rLo.back)<1;
+ const ownerFlat=Math.abs(rHi.owner-rLo.owner)<1;
+ const effLo=rLo.back-rLo.backSaving, effHi=rHi.back-rHi.backSaving, effFlat=Math.abs(effHi-effLo)<1;
  if(sbHi-sbLo<0.0005)gnote.textContent='※ シャンパン・ボトル比率の「下限」と「上限」が同じ値（幅0）です。詳細設定→売上構成 で比率に幅（例 8〜30%）を入れると、ここに上限/下限の差が出ます。';
- else if(ownerFlat&&!backFlat)gnote.textContent='※ 大入りバックの配分（キャスト%＋店長%）が合計100%のため、利益の増減はすべて大入りで分配され、オーナー取り分は「店舗資金プール」で固定です。オーダーの偏りをオーナー取り分に反映したいときは、詳細設定→大入り で「→ 残り(オーナー)」が0%より大きくなるよう、キャスト%＋店長%を100%未満にしてください。';
- else if(ownerFlat&&backFlat)gnote.textContent='※ 通常ドリンクとシャンパン・ボトルのバック率が同じため、オーダーが偏っても利益は変わりません（詳細設定のバック率をご確認ください）。';
+ else if(ownerFlat&&r.ownerR<=0&&r.genzai>0)gnote.textContent='※ 大入りバックの配分（キャスト%＋店長%）が合計100%のため、利益の増減はすべて大入りで分配され、オーナー取り分は「店舗資金プール」で固定です。オーナーに反映したいときは、詳細設定→大入り でキャスト%＋店長%を100%未満に（「→ 残り(オーナー)」>0%）してください。';
+ else if(ownerFlat&&effFlat)gnote.textContent='※ 実際に支払うバック（保証適用後）がオーダー構成で変わらないため、利益は動きません。全員が保証時給などで、シャンパン・ボトルのバック率が通常ドリンクと同率（例 どちらも10%）になっているのが主因です。差を出すには「保証中バック率」や「通常ドリンク単価」を変えてください。';
+ else if(ownerFlat)gnote.textContent='※ この設定ではオーダーが偏っても利益がほぼ変わりません（詳細設定のバック率・大入り配分をご確認ください）。';
  else gnote.textContent='';
  const rr=[['オーナー取り分',rLo.owner,r.owner,rHi.owner,true],
            ['キャスト合計',rLo.cast,r.cast,rHi.cast,true],
-           ['バック総額',rLo.back,r.back,rHi.back,true],
+           ['バック総額（保証後）',rLo.back-rLo.backSaving,r.back-r.backSaving,rHi.back-rHi.backSaving,true],
            ['営業利益率',rLo.rate,r.rate,rHi.rate,false]];
  $('rtbl').innerHTML='<tr><th></th><th class="l">下限</th><th>標準</th><th class="h">上限</th></tr>'+
   rr.map(row=>`<tr><td>${row[0]}</td><td>${row[4]?yen(row[1]):(row[1]*100).toFixed(0)+'%'}</td><td>${row[4]?yen(row[2]):(row[2]*100).toFixed(0)+'%'}</td><td>${row[4]?yen(row[3]):(row[3]*100).toFixed(0)+'%'}</td></tr>`).join('');
@@ -471,7 +473,7 @@ function buildCSV(){
  L.push(['オーダー偏りレンジ','下限(不利)','標準','上限(有利)']);
  L.push(['オーナー取り分',Math.round(rLo.owner),Math.round(r.owner),Math.round(rHi.owner)]);
  L.push(['キャスト合計',Math.round(rLo.cast),Math.round(r.cast),Math.round(rHi.cast)]);
- L.push(['バック総額',Math.round(rLo.back),Math.round(r.back),Math.round(rHi.back)]);
+ L.push(['バック総額（保証後）',Math.round(rLo.back-rLo.backSaving),Math.round(r.back-r.backSaving),Math.round(rHi.back-rHi.backSaving)]);
  L.push(['営業利益率',(rLo.rate*100).toFixed(0)+'%',(r.rate*100).toFixed(0)+'%',(rHi.rate*100).toFixed(0)+'%']);
  L.push(['','']);
  L.push(['計算の内訳','']);
