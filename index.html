@@ -1,0 +1,373 @@
+<title>分配シミュレーター</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+:root{--bg:#F4F2ED;--card:#FFFFFF;--ink:#1B1C22;--sub:#6E7080;--line:#E4DFD5;--accent:#9E3B54;--good:#1F7A4D;--bad:#B23A48}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111218;--card:#1D1E26;--ink:#ECEDF3;--sub:#9092A0;--line:#2C2E3C;--accent:#DE7D93;--good:#7FD3A3;--bad:#F08C8C}}
+:root[data-theme="dark"]{--bg:#111218;--card:#1D1E26;--ink:#ECEDF3;--sub:#9092A0;--line:#2C2E3C;--accent:#DE7D93;--good:#7FD3A3;--bad:#F08C8C}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;font-size:17px;line-height:1.6;padding:20px 16px 60px}
+.wrap{max-width:520px;margin:0 auto}
+h1{font-size:1.35rem;font-weight:800;text-align:center;margin-bottom:4px}
+.tagline{text-align:center;color:var(--sub);font-size:.85rem;margin-bottom:20px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px 18px;margin-bottom:16px}
+.q{font-size:.95rem;color:var(--sub);font-weight:600;margin-bottom:4px;text-align:center}
+.big{font-size:2.6rem;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
+.big small{font-size:1.1rem;font-weight:600;color:var(--sub)}
+.stepper{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px}
+.stepper button{width:56px;height:56px;border-radius:16px;border:none;background:var(--accent);color:#fff;font-size:1.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.stepper button:active{transform:scale(.94)}
+input[type=range]{width:100%;height:36px;margin-top:14px;accent-color:var(--accent)}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.chip{padding:9px 16px;border-radius:99px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font-size:.95rem;font-weight:600;cursor:pointer}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.status{text-align:center;font-size:.95rem;font-weight:600;margin-top:12px;padding:8px;border-radius:12px}
+.status.good{background:rgba(31,122,77,.13);color:var(--good)}
+.status.bad{background:rgba(178,58,72,.13);color:var(--bad)}
+.warn{text-align:center;font-size:.82rem;color:var(--bad);margin-top:8px}
+.cards{display:flex;flex-direction:column;gap:12px}
+.card{border-radius:18px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;color:#fff}
+.card .who{font-size:1.05rem;font-weight:700}
+.card .who small{display:block;font-size:.72rem;font-weight:500;opacity:.92}
+.card .amt{font-size:1.7rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.c-cast{background:#2E6F73}.c-mgr{background:#9A6B12}.c-owner{background:#9E3B54}.c-cost{background:#6E675A}
+details{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:14px;overflow:hidden}
+summary{padding:16px 18px;font-weight:700;cursor:pointer;list-style:none;color:var(--ink);display:flex;justify-content:space-between;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▾";color:var(--sub);font-size:.9rem}
+details[open] summary::after{content:"▴"}
+.subhead{padding:14px 18px 4px;font-size:.8rem;font-weight:700;color:var(--accent);border-top:1px solid var(--line)}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 18px;font-size:.92rem}
+.setrow label{color:var(--sub);flex:1}
+.setrow .u{color:var(--sub);font-size:.85rem;margin-left:2px}
+.setrow input{width:96px;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:1rem;text-align:right;font-variant-numeric:tabular-nums}
+.setrow.calc{background:rgba(0,0,0,.02)} .setrow.calc b{font-variant-numeric:tabular-nums}
+.exrow{display:flex;gap:8px;align-items:center;padding:6px 18px}
+.exrow input.ex-name{flex:1;min-width:0;text-align:left;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:.95rem}
+.exrow input.ex-amt{width:96px;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:.95rem;text-align:right;font-variant-numeric:tabular-nums}
+.exrow .ex-del{width:34px;height:34px;flex:none;border:none;border-radius:9px;background:rgba(178,58,72,.14);color:var(--bad);font-size:1.2rem;cursor:pointer}
+.addbtn{width:calc(100% - 36px);margin:8px 18px 14px;padding:11px;border:1.5px dashed var(--line);border-radius:12px;background:transparent;color:var(--accent);font-size:.92rem;font-weight:700;cursor:pointer}
+.addbtn:active{transform:scale(.98)}
+.rrow{display:flex;justify-content:space-between;padding:10px 18px;font-size:.92rem;border-top:1px solid var(--line)}
+.rrow:first-child{border-top:none}
+.rrow span{color:var(--sub)} .rrow b{font-variant-numeric:tabular-nums}
+.tblwrap{padding:6px 12px 14px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.82rem;min-width:440px}
+th,td{padding:8px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;color:var(--sub)} th{color:var(--sub);font-size:.72rem}
+.notes{padding:6px 18px 16px;font-size:.82rem;color:var(--sub);line-height:1.7}
+.notes div{padding:4px 0;border-top:1px solid var(--line)} .notes div:first-child{border-top:none}
+.recalc{display:block;width:100%;margin-top:20px;padding:20px;border:none;border-radius:16px;background:var(--accent);color:#fff;font-size:1.25rem;font-weight:800;cursor:pointer;box-shadow:0 3px 10px rgba(158,59,84,.3)}
+.recalc:active{transform:scale(.98)}
+.exportbox{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.expbtn{width:100%;padding:16px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-size:1.05rem;font-weight:700;cursor:pointer}
+.expbtn:active{transform:scale(.98)}
+.expmsg{text-align:center;font-size:.8rem;color:var(--sub);min-height:1.2em}
+.hint{text-align:center;color:var(--sub);font-size:.82rem;margin-top:22px;line-height:1.7}
+@media print{
+ body{padding:0;background:#fff}
+ .stepper,input[type=range],.chips,.addbtn,.recalc,.exportbox,.hint,summary::after,.ex-del{display:none!important}
+ details{border:none;margin:0}details summary{color:#000;pointer-events:none}
+ .panel,details{box-shadow:none;border:1px solid #ccc}
+ .card{color:#000!important;background:#fff!important;border:1px solid #999;border-left:8px solid #999}
+ .c-cast{border-left-color:#2E6F73}.c-mgr{border-left-color:#9A6B12}.c-owner{border-left-color:#9E3B54}.c-cost{border-left-color:#6E675A}
+ .card .who small{opacity:1;color:#555}
+ .setrow input{border:none;background:#fff}
+}
+.hint b{color:var(--ink)}
+</style>
+<div class="wrap">
+<h1>月次 分配シミュレーター</h1>
+<div class="tagline">想定月商に応じた各ポジションの分配額を試算</div>
+
+<div class="panel">
+<div class="q">想定月商</div>
+<div class="big"><span id="rev">300</span><small>万円</small></div>
+<div class="stepper"><button id="minus" aria-label="10万減らす">−</button><button id="plus" aria-label="10万増やす">＋</button></div>
+<input type="range" id="slider" min="150" max="500" step="10" value="300">
+<div class="chips" id="chips"></div>
+<div class="status" id="status"></div>
+<div class="warn" id="warn"></div>
+</div>
+
+<div class="cards">
+<div class="card c-cast"><div class="who">キャスト（合計）<small>固定給＋手当＋バック＋達成金</small></div><div class="amt" id="a-cast"></div></div>
+<div class="card c-mgr"><div class="who">店長<small>固定報酬＋大入りバック</small></div><div class="amt" id="a-mgr"></div></div>
+<div class="card c-owner"><div class="who">オーナー<small>営業利益（取り分）</small></div><div class="amt" id="a-owner"></div></div>
+<div class="card c-cost"><div class="who">経費（分配対象外）<small>原価・家賃・光熱・追加費用ほか</small></div><div class="amt" id="a-cost"></div></div>
+</div>
+
+<details>
+<summary>詳細設定（前提条件）</summary>
+
+<div class="subhead">売上前提（客単価の内訳）</div>
+<div class="setrow"><label>セット料金</label><span><input type="number" id="s-set" value="4500" step="500"><span class="u">円</span></span></div>
+<div class="setrow"><label>想定ドリンクオーダー数/人</label><span><input type="number" id="s-drinks" value="1" step="0.5"><span class="u">杯</span></span></div>
+<div class="setrow"><label>ドリンク平均単価</label><span><input type="number" id="s-drinkprice" value="1000" step="100"><span class="u">円</span></span></div>
+<div class="setrow calc"><label>→ 客単価(自動)</label><b id="calc-price"></b></div>
+<div class="setrow"><label>営業日/月</label><span><input type="number" id="s-days" value="26" step="1"><span class="u">日</span></span></div>
+
+<div class="subhead">変動費（売上比）</div>
+<div class="setrow"><label>原価率（お酒）</label><span><input type="number" id="s-cogsSake" value="15" step="1"><span class="u">%</span></span></div>
+<div class="setrow"><label>原価率（それ以外）</label><span><input type="number" id="s-cogsOther" value="7" step="1"><span class="u">%</span></span></div>
+<div class="setrow"><label>その他変動費率</label><span><input type="number" id="s-ovar" value="8" step="1"><span class="u">%</span></span></div>
+<div class="setrow"><label>キャスト商品バック率</label><span><input type="number" id="s-back" value="9" step="1"><span class="u">%</span></span></div>
+<div id="ex-var"></div>
+<button class="addbtn" data-add="var">＋ 変動費を追加（%）</button>
+
+<div class="subhead">固定費 ─ 人件費</div>
+<div class="setrow"><label>平日 出勤人数/夜</label><input type="number" id="s-wk" value="3" step="1"></div>
+<div class="setrow"><label>金土 出勤人数/夜</label><input type="number" id="s-we" value="5" step="1"></div>
+<div class="setrow"><label>平日 日数/月</label><input type="number" id="s-wkd" value="18" step="1"></div>
+<div class="setrow"><label>金土 日数/月</label><input type="number" id="s-wed" value="8" step="1"></div>
+<div class="setrow"><label>営業時間/日</label><span><input type="number" id="s-hours" value="5" step="0.5"><span class="u">h</span></span></div>
+<div class="setrow"><label>基本時給（キャスト）</label><span><input type="number" id="s-wage" value="1700" step="50"><span class="u">円</span></span></div>
+<div class="setrow"><label>在籍キャスト数</label><span><input type="number" id="s-roster" value="6" step="1"><span class="u">人</span></span></div>
+<div class="setrow"><label>皆勤賞（1人あたり）</label><span><input type="number" id="s-kinkin" value="30000" step="5000"><span class="u">円</span></span></div>
+<div class="setrow"><label>精勤手当（1人あたり）</label><span><input type="number" id="s-seikin" value="10000" step="5000"><span class="u">円</span></span></div>
+<div class="setrow"><label>店長 固定報酬</label><span><input type="number" id="s-mgrfix" value="250000" step="10000"><span class="u">円</span></span></div>
+<div class="setrow calc"><label>→ 手当合計((皆勤+精勤)×在籍)</label><b id="calc-tedate"></b></div>
+<div id="ex-jin"></div>
+<button class="addbtn" data-add="jin">＋ 人件費を追加（円）</button>
+
+<div class="subhead">固定費 ─ 店舗費</div>
+<div class="setrow"><label>家賃(月額)</label><span><input type="number" id="s-rent" value="185000" step="5000"><span class="u">円</span></span></div>
+<div class="setrow"><label>水道光熱費</label><span><input type="number" id="s-light" value="40000" step="5000"><span class="u">円</span></span></div>
+<div class="setrow"><label>ネット・通信</label><span><input type="number" id="s-net" value="10000" step="1000"><span class="u">円</span></span></div>
+<div class="setrow"><label>カラオケリース</label><span><input type="number" id="s-kara" value="25000" step="5000"><span class="u">円</span></span></div>
+<div class="setrow"><label>送迎ドライバー</label><span><input type="number" id="s-driver" value="50000" step="5000"><span class="u">円</span></span></div>
+<div class="setrow"><label>その他固定</label><span><input type="number" id="s-otherfix" value="30000" step="5000"><span class="u">円</span></span></div>
+<div id="ex-ten"></div>
+<button class="addbtn" data-add="ten">＋ 店舗費を追加（円）</button>
+
+<div class="subhead">大入り（利益の分配）</div>
+<div class="setrow"><label>大入り達成売上（この月商以上で発動）</label><span><input type="number" id="s-oiri" value="2900000" step="100000"><span class="u">円</span></span></div>
+<div class="setrow"><label>店舗資金プール<br><span class="u">釣り銭・オーナー取り分・運営予備費</span></label><span><input type="number" id="s-pool" value="300000" step="50000"><span class="u">円</span></span></div>
+<div class="setrow"><label>大入りバック → キャスト全体</label><span><input type="number" id="s-castR" value="20" step="1"><span class="u">%</span></span></div>
+<div class="setrow"><label>大入りバック → 店長</label><span><input type="number" id="s-mgrR" value="15" step="1"><span class="u">%</span></span></div>
+<div class="setrow calc"><label>→ 残り(オーナー)</label><b id="ownerR"></b></div>
+</details>
+
+<details><summary>計算の内訳</summary><div id="breakdown"></div></details>
+<details><summary>月商別 分配（自動）</summary><div class="tblwrap"><table id="mtable"></table></div></details>
+<details><summary>各項目の計算式と説明</summary><div class="notes" id="formulas"></div></details>
+
+<button class="recalc" id="recalc">再計算する（結果を上に表示）</button>
+
+<div class="exportbox">
+<button class="expbtn" id="btnSave">この設定を保存（この端末に記憶＋リンク作成）</button>
+<button class="expbtn" id="btnPDF">PDFで保存</button>
+<button class="expbtn" id="btnCSV">Excel / スプレッドシート用に書き出す</button>
+<div class="expmsg" id="expmsg"></div>
+</div>
+
+<div class="hint">
+<b>ホーム画面に追加すると、アプリのように起動できます</b><br>
+Safari: 共有ボタン →「ホーム画面に追加」　/　Android: ⋮ →「ホーム画面に追加」
+</div>
+</div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const yen=v=>'¥'+Math.round(v).toLocaleString('ja-JP');
+const num=id=>{const v=parseFloat($(id).value);return isNaN(v)?0:v;};
+const sumEx=cls=>{let t=0;document.querySelectorAll(cls).forEach(i=>{const v=parseFloat(i.value);if(!isNaN(v))t+=v;});return t;};
+// ===== 設定の保存/復元 =====
+const SKEY='sakuragi-dist-v1';
+const SIDS=['slider','s-set','s-drinks','s-drinkprice','s-days','s-cogsSake','s-cogsOther','s-ovar','s-back','s-wk','s-we','s-wkd','s-wed','s-hours','s-wage','s-roster','s-kinkin','s-seikin','s-mgrfix','s-rent','s-light','s-net','s-kara','s-driver','s-otherfix','s-oiri','s-pool','s-castR','s-mgrR'];
+const EXDEF={'ex-var':['ex-var','項目名（例：カード手数料）','%'],'ex-jin':['ex-jin','項目名（例：ボーイ人件費）','円'],'ex-ten':['ex-ten','項目名（例：おしぼり）','円']};
+function exRows(box){return [...document.querySelectorAll('#'+box+' .exrow')].map(r=>({n:r.querySelector('.ex-name').value,a:r.querySelector('.ex-amt').value}));}
+function getState(){const o={};SIDS.forEach(id=>{if($(id))o[id]=$(id).value;});o._var=exRows('ex-var');o._jin=exRows('ex-jin');o._ten=exRows('ex-ten');return o;}
+function setState(o){if(!o)return;SIDS.forEach(id=>{if(o[id]!=null&&$(id))$(id).value=o[id];});
+ [['_var','ex-var'],['_jin','ex-jin'],['_ten','ex-ten']].forEach(([k,box])=>{$(box).innerHTML='';(o[k]||[]).forEach(it=>{const c=EXDEF[box];addRow(box,c[0],c[1],c[2],it.n,it.a);});});}
+function saveLocal(){try{localStorage.setItem(SKEY,JSON.stringify(getState()));}catch(e){}}
+function loadLocal(){try{return JSON.parse(localStorage.getItem(SKEY));}catch(e){return null;}}
+function b64e(s){return btoa(unescape(encodeURIComponent(s)));}
+function b64d(s){return decodeURIComponent(escape(atob(s)));}
+function stateFromHash(){const m=(location.hash||'').match(/d=([^&]+)/);if(!m)return null;try{return JSON.parse(b64d(decodeURIComponent(m[1])));}catch(e){return null;}}
+const rs=()=>{render();saveLocal();};
+function calc(revMan){
+ const S=revMan*10000;
+ const price=num('s-set')+num('s-drinks')*num('s-drinkprice');
+ const cf=(num('s-wk')*num('s-wkd')+num('s-we')*num('s-wed'))*num('s-hours')*num('s-wage');
+ const tedate=(num('s-kinkin')+num('s-seikin'))*num('s-roster');
+ const exJin=sumEx('.ex-jin'), exTen=sumEx('.ex-ten'), exVar=sumEx('.ex-var')/100;
+ const jinken=cf+tedate+num('s-mgrfix')+exJin;
+ const tenpo=num('s-rent')+num('s-light')+num('s-net')+num('s-kara')+num('s-driver')+num('s-otherfix')+exTen;
+ const F=jinken+tenpo;
+ const cogs=num('s-cogsSake')/100+num('s-cogsOther')/100;
+ const vrate=cogs+num('s-ovar')/100+num('s-back')/100+exVar;
+ const back=S*num('s-back')/100;
+ const P0=S-S*vrate-F;                        // 営業利益(分配前)
+ const castR=num('s-castR')/100, mgrR=num('s-mgrR')/100;
+ const gate=S>=num('s-oiri');
+ const genzai=gate?Math.max(0,P0-num('s-pool')):0;   // 大入り分配原資
+ const tassei=genzai*castR, mgrBonus=genzai*mgrR;
+ const cast=cf+tedate+back+tassei;
+ const mgr=num('s-mgrfix')+mgrBonus;
+ const owner=P0-tassei-mgrBonus;
+ const cost=S-cast-mgr-owner;
+ const bep=vrate<1?F/(1-vrate):Infinity;
+ return {S,price,cf,tedate,jinken,tenpo,F,cogs,vrate,varyen:S*vrate,back,P0,genzai,cast,mgr,owner,cost,bep,
+  rate:P0/S,need:(price&&num('s-days'))?S/price/num('s-days'):0,labor:(cast+mgr)/S,ownerR:100-num('s-castR')-num('s-mgrR')};
+}
+const CHIPS=[200,250,300,350,400,500];
+function render(){
+ const rm=+$('slider').value; $('rev').textContent=rm;
+ const r=calc(rm);
+ $('a-cast').textContent=yen(r.cast);$('a-mgr').textContent=yen(r.mgr);$('a-cost').textContent=yen(r.cost);
+ const ow=document.querySelector('.c-owner .who');
+ if(r.owner<0){$('a-owner').textContent='▲'+yen(-r.owner);ow.innerHTML='オーナー（持ち出し）<small>営業赤字の負担</small>';}
+ else{$('a-owner').textContent=yen(r.owner);ow.innerHTML='オーナー<small>営業利益（取り分）</small>';}
+ $('calc-price').textContent=yen(r.price);
+ $('calc-tedate').textContent=yen(r.tedate);
+ $('ownerR').textContent=r.ownerR+'%';
+ const st=$('status');
+ const bepT='<span style="white-space:nowrap">損益分岐 '+(r.bep/10000).toFixed(0)+'万円</span>';
+ if(r.vrate>=1){st.className='status bad';st.innerHTML='⚠ 変動費が売上以上（限界利益がありません）';}
+ else if(r.owner<0){st.className='status bad';st.innerHTML='⚠ 営業赤字（'+bepT+'）';}
+ else{st.className='status good';st.innerHTML='✓ 営業黒字（利益率 '+(r.rate*100).toFixed(0)+'%・'+bepT+'）';}
+ $('warn').textContent = r.ownerR<0 ? '⚠ 大入りバックの合計が100%超（オーナー取り分がマイナス）' : '';
+ const B=[['客単価(自動)',yen(r.price)],['必要客数/夜',r.need.toFixed(1)+' 人'],['キャスト固定給',yen(r.cf)],
+  ['手当合計',yen(r.tedate)],['人件費 小計',yen(r.jinken)],['店舗費 小計',yen(r.tenpo)],['固定費 合計',yen(r.F)],
+  ['変動費 合計',yen(r.varyen)],['限界利益率',(r.vrate<1?((1-r.vrate)*100).toFixed(1):'—')+' %'],
+  ['損益分岐点',isFinite(r.bep)?yen(r.bep):'—'],['営業利益(分配前)',yen(r.P0)],
+  ['大入り分配原資',yen(r.genzai)],['総人件費率',(r.labor*100).toFixed(0)+' %']];
+ $('breakdown').innerHTML=B.map(x=>`<div class="rrow"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
+ const cols=[250,300,350,400,500].map(v=>calc(v));
+ const rows=[['キャスト',c=>yen(c.cast)],['店長',c=>yen(c.mgr)],['オーナー',c=>yen(c.owner)],['経費',c=>yen(c.cost)],['利益率',c=>(c.rate*100).toFixed(0)+'%']];
+ $('mtable').innerHTML='<tr><th></th>'+cols.map(c=>`<th>${c.S/10000}万</th>`).join('')+'</tr>'+
+  rows.map(rw=>`<tr><td>${rw[0]}</td>${cols.map(c=>`<td>${rw[1](c)}</td>`).join('')}</tr>`).join('');
+}
+function addRow(box,cls,ph,unit,name,amt){
+ const row=document.createElement('div');row.className='exrow';
+ row.innerHTML=`<input class="ex-name" placeholder="${ph}"><input class="ex-amt ${cls}" type="number" inputmode="numeric" placeholder="${unit}"><button class="ex-del" aria-label="削除">×</button>`;
+ const nm=row.querySelector('.ex-name'),am=row.querySelector('.ex-amt');
+ if(name!=null)nm.value=name; if(amt!=null)am.value=amt;
+ nm.addEventListener('input',saveLocal);
+ am.addEventListener('input',rs);
+ row.querySelector('.ex-del').addEventListener('click',()=>{row.remove();rs();});
+ $(box).appendChild(row);
+}
+document.querySelectorAll('[data-add]').forEach(btn=>btn.addEventListener('click',()=>{
+ const t=btn.dataset.add;
+ if(t==='var')addRow('ex-var','ex-var','項目名（例：カード手数料）','%');
+ if(t==='jin')addRow('ex-jin','ex-jin','項目名（例：ボーイ人件費）','円');
+ if(t==='ten')addRow('ex-ten','ex-ten','項目名（例：おしぼり）','円');
+}));
+$('chips').innerHTML=CHIPS.map(v=>`<button class="chip" data-v="${v}">${v}万</button>`).join('');
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{$('slider').value=c.dataset.v;rs();}));
+$('slider').addEventListener('input',rs);
+$('plus').addEventListener('click',()=>{$('slider').value=Math.min(500,+$('slider').value+10);rs();});
+$('minus').addEventListener('click',()=>{$('slider').value=Math.max(150,+$('slider').value-10);rs();});
+document.addEventListener('input',e=>{if(e.target.id&&e.target.id.startsWith('s-'))rs();});
+$('formulas').innerHTML=[
+ '客単価 = セット料金 + 想定ドリンク数 × ドリンク平均単価',
+ '必要客数/夜 = 月商 ÷ 客単価 ÷ 営業日',
+ '原価率 = お酒 + それ以外',
+ '変動費率 = 原価率 + その他変動費率 + キャスト商品バック率 + 追加変動項目',
+ 'キャスト固定給 = (平日人数×平日日数 + 金土人数×金土日数) × 営業時間 × 基本時給',
+ '手当合計 = (皆勤賞/人 + 精勤手当/人) × 在籍キャスト数',
+ '人件費 小計 = キャスト固定給 + 手当合計 + 店長固定報酬 + 追加人件費',
+ '店舗費 小計 = 家賃 + 光熱 + ネット + カラオケ + 送迎ドライバー + その他 + 追加店舗費',
+ '固定費 合計 = 人件費小計 + 店舗費小計',
+ '営業利益(分配前) = 月商 − 変動費 − 固定費合計',
+ '大入り分配原資 = (月商 ≧ 大入り達成売上 のとき) max(0, 営業利益 − 店舗資金プール) / それ未満は 0',
+ 'キャスト = 固定給 + 手当 + 商品バック(月商×バック率) + 大入り達成金(原資×キャスト%)',
+ '店長 = 店長固定報酬 + 大入りバック(原資×店長%)',
+ 'オーナー = 営業利益 − 大入り(キャスト分+店長分)。店舗資金プールと残り%はここに入る',
+ '経費(分配対象外) = 月商 − キャスト − 店長 − オーナー（原価・店舗費など）',
+].map(t=>`<div>・${t}</div>`).join('');
+$('recalc').addEventListener('click',()=>{render();window.scrollTo({top:0,behavior:'smooth'});});
+// ===== PDF出力(キャンバス→画像→PDF) =====
+function roundRect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+function buildReportCanvas(){
+ const rm=+$('slider').value, r=calc(rm), sc=2, W=720;
+ const FS='-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif';
+ const cards=[['キャスト（合計）',r.cast,'#2E6F73'],['店長',r.mgr,'#9A6B12'],['オーナー',r.owner,'#9E3B54'],['経費（分配対象外）',r.cost,'#6E675A']];
+ const info=[['客単価',yen(r.price)],['必要客数/夜',r.need.toFixed(1)+' 人'],['損益分岐点',isFinite(r.bep)?yen(r.bep):'—'],['限界利益率',(r.vrate<1?((1-r.vrate)*100).toFixed(1):'—')+' %'],['営業利益(分配前)',yen(r.P0)],['総人件費率',(r.labor*100).toFixed(0)+' %']];
+ const H=48+26+30+30+cards.length*60+38+info.length*30+24;
+ const cv=document.createElement('canvas'); cv.width=W*sc; cv.height=Math.round(H)*sc;
+ const g=cv.getContext('2d'); g.scale(sc,sc);
+ g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
+ let y=48; g.textAlign='left';
+ g.fillStyle='#1B1C22'; g.font='700 26px '+FS; g.fillText('月次 分配レポート',40,y); y+=24;
+ const d=new Date(); g.fillStyle='#6E7080'; g.font='400 13px '+FS; g.fillText(d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()+' 作成',40,y); y+=30;
+ g.fillStyle='#1B1C22'; g.font='700 22px '+FS; g.fillText('想定月商 '+rm+'万円',40,y); y+=26;
+ cards.forEach(c=>{g.fillStyle=c[2];roundRect(g,40,y,W-80,50,10);g.fill();
+  g.fillStyle='#fff';g.font='700 17px '+FS;g.textAlign='left';g.fillText(c[0],56,y+31);
+  g.font='800 22px '+FS;g.textAlign='right';g.fillText(yen(c[1]),W-56,y+32);y+=60;});
+ y+=16;g.textAlign='left';g.fillStyle='#9E3B54';g.font='700 15px '+FS;g.fillText('計算の内訳',40,y);y+=24;
+ g.font='400 15px '+FS;
+ info.forEach(it=>{g.fillStyle='#6E7080';g.textAlign='left';g.fillText(it[0],40,y);g.fillStyle='#1B1C22';g.textAlign='right';g.fillText(it[1],W-40,y);y+=30;});
+ return {cv,W,H:Math.round(H)};
+}
+function dataURItoBytes(u){const b=atob(u.split(',')[1]);const a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+function jpegToPdf(jpeg,iw,ih,pw,ph){
+ const enc=new TextEncoder();const parts=[];let len=0;const off=[];
+ const P=x=>{const b=(x instanceof Uint8Array)?x:enc.encode(x);parts.push(b);len+=b.length;};
+ P('%PDF-1.3\n');
+ off[1]=len;P('1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n');
+ off[2]=len;P('2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n');
+ off[3]=len;P('3 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 '+pw+' '+ph+']/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>\nendobj\n');
+ off[4]=len;P('4 0 obj\n<</Type/XObject/Subtype/Image/Width '+iw+'/Height '+ih+'/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length '+jpeg.length+'>>\nstream\n');P(jpeg);P('\nendstream\nendobj\n');
+ const cs='q '+pw+' 0 0 '+ph+' 0 0 cm /Im0 Do Q';
+ off[5]=len;P('5 0 obj\n<</Length '+cs.length+'>>\nstream\n'+cs+'\nendstream\nendobj\n');
+ const xs=len;let x='xref\n0 6\n0000000000 65535 f \n';for(let i=1;i<=5;i++)x+=String(off[i]).padStart(10,'0')+' 00000 n \n';P(x);
+ P('trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n'+xs+'\n%%EOF');
+ const out=new Uint8Array(len);let o=0;parts.forEach(b=>{out.set(b,o);o+=b.length;});return out;
+}
+$('btnPDF').addEventListener('click',()=>{
+ const msg=$('expmsg');msg.textContent='PDFを作成中…';
+ try{
+  const {cv,W,H}=buildReportCanvas();
+  const jpeg=dataURItoBytes(cv.toDataURL('image/jpeg',0.92));
+  const pdf=jpegToPdf(jpeg,cv.width,cv.height,W,H);
+  saveFile('分配レポート.pdf',pdf,'application/pdf');
+  msg.textContent='PDFを保存しました（開かない時は共有ボタン→「ファイルに保存」）';
+ }catch(e){msg.textContent='保存できませんでした';}
+});
+// CSV書き出し
+function saveFile(filename,data,mime){const blob=(data instanceof Blob)?data:new Blob([data],{type:mime||'application/octet-stream'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.rel='noopener';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},4000);}
+function buildCSV(){
+ const rm=+$('slider').value, r=calc(rm);
+ const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+ const L=[];
+ L.push(['桜木町 分配レポート','']);
+ L.push(['想定月商', (rm)+'万円']);
+ L.push(['','']);
+ L.push(['分配','金額']);
+ L.push(['キャスト（合計）',Math.round(r.cast)]);
+ L.push(['店長',Math.round(r.mgr)]);
+ L.push(['オーナー',Math.round(r.owner)]);
+ L.push(['経費（分配対象外）',Math.round(r.cost)]);
+ L.push(['','']);
+ L.push(['計算の内訳','']);
+ [['客単価',r.price],['必要客数/夜',r.need.toFixed(1)],['キャスト固定給',r.cf],['手当合計',r.tedate],
+  ['人件費小計',r.jinken],['店舗費小計',r.tenpo],['固定費合計',r.F],['変動費合計',Math.round(r.varyen)],
+  ['限界利益率',(r.vrate<1?((1-r.vrate)*100).toFixed(1)+'%':'—')],['損益分岐点',Math.round(r.bep)],
+  ['営業利益(分配前)',Math.round(r.P0)],['大入り分配原資',Math.round(r.genzai)],['総人件費率',(r.labor*100).toFixed(0)+'%']]
+  .forEach(x=>L.push([x[0],x[1]]));
+ L.push(['','']);
+ L.push(['月商別','キャスト','店長','オーナー','経費','利益率']);
+ [250,300,350,400,500].forEach(v=>{const c=calc(v);L.push([v+'万',Math.round(c.cast),Math.round(c.mgr),Math.round(c.owner),Math.round(c.cost),(c.rate*100).toFixed(0)+'%']);});
+ return '﻿'+L.map(row=>row.map(q).join(',')).join('\r\n');
+}
+$('btnCSV').addEventListener('click',()=>{
+ const msg=$('expmsg'); msg.textContent='書き出し中…';
+ try{ saveFile('分配レポート.csv',buildCSV(),'text/csv;charset=utf-8'); msg.textContent='保存しました（Excel・スプレッドシートで開けます）'; }
+ catch(e){ msg.textContent='保存できませんでした'; }
+});
+// 設定を保存(端末に記憶＋リンク作成)
+$('btnSave').addEventListener('click',async()=>{
+ saveLocal();
+ const url=location.origin+location.pathname+'#d='+encodeURIComponent(b64e(JSON.stringify(getState())));
+ try{history.replaceState(null,'',url);}catch(e){try{location.hash='d='+encodeURIComponent(b64e(JSON.stringify(getState())));}catch(e2){}}
+ let msg='この端末に保存しました。ホーム画面に追加すると、この設定で開きます。';
+ try{await navigator.clipboard.writeText(url);msg+='（設定リンクをコピーしました）';}catch(e){}
+ $('expmsg').textContent=msg;
+});
+// 起動時: リンク＞この端末の記憶＞初期値 の順で復元
+(function(){const init=stateFromHash()||loadLocal();if(init)setState(init);})();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
+render();
+</script>
