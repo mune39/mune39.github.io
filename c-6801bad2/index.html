@@ -124,6 +124,7 @@ table.mt th:first-child,table.mt td:first-child{text-align:left;color:var(--sub)
  <div class="hi"><div class="lab h" id="rg-hilab">上限（低バックに偏り）</div><div class="v" id="rg-hi"></div></div>
 </div>
 <table class="rtbl" id="rtbl"></table>
+<div class="rsub" id="rg-note" style="margin-top:10px;margin-bottom:0;color:var(--bad)"></div>
 </div>
 
 <details>
@@ -295,10 +296,11 @@ function calc(revMan,sbOverride){
 const CHIPS=[200,250,300,350,400,500];
 function render(){
  const rm=+$('slider').value; $('rev').textContent=rm;
- const sbLow=num('s-sbLow')/100, sbHigh=num('s-sbHigh')/100;
+ let sbA=num('s-sbLow')/100, sbB=num('s-sbHigh')/100;
+ const sbLo=Math.min(sbA,sbB), sbHi=Math.max(sbA,sbB);
  const r=calc(rm);                       // 標準
- const rLo=calc(rm,sbHigh);              // 高バックに偏り→店に不利(下限)
- const rHi=calc(rm,sbLow);               // 低バックに偏り→店に有利(上限)
+ const rLo=calc(rm,sbHi);                // 高バックに偏り→店に不利(下限)
+ const rHi=calc(rm,sbLo);                // 低バックに偏り→店に有利(上限)
  $('a-cast').textContent=yen(r.cast);$('a-mgr').textContent=yen(r.mgr);$('a-cost').textContent=yen(r.cost);
  const ow=document.querySelector('.c-owner .who');
  if(r.owner<0){$('a-owner').textContent=yen(r.owner);ow.innerHTML='オーナー（持ち出し）<small>営業赤字の負担</small>';}
@@ -318,11 +320,15 @@ function render(){
  else{st.className='status good';st.innerHTML='✓ 営業黒字（利益率 '+(r.rate*100).toFixed(0)+'%・'+bepT+'）';}
  $('warn').textContent = r.ownerR<0 ? '⚠ 大入りバックの合計が100%超（オーナー取り分がマイナス）' : '';
  // 利益レンジ
- $('rg-lolab').textContent='下限（ボトル比 '+num('s-sbHigh')+'%）';
- $('rg-hilab').textContent='上限（ボトル比 '+num('s-sbLow')+'%）';
+ $('rg-lolab').textContent='下限（ボトル比 '+(sbHi*100).toFixed(0)+'%）';
+ $('rg-hilab').textContent='上限（ボトル比 '+(sbLo*100).toFixed(0)+'%）';
  $('rg-lo').textContent=yen(rLo.owner); $('rg-lo').style.color='var(--bad)';
  $('rg-hi').textContent=yen(rHi.owner); $('rg-hi').style.color='var(--good)';
  $('rg-mid').textContent=yen(r.owner);
+ const gnote=$('rg-note');
+ if(sbHi-sbLo<0.0005)gnote.textContent='※ シャンパン・ボトル比率の「下限」と「上限」が同じ値（幅0）です。詳細設定→売上構成 で比率に幅（例 8〜30%）を入れると、ここに上限/下限の差が出ます。';
+ else if(Math.abs(rHi.owner-rLo.owner)<1)gnote.textContent='※ 通常ドリンクとシャンパン・ボトルのバック率が同じため、オーダーが偏っても利益は変わりません（詳細設定のバック率をご確認ください）。';
+ else gnote.textContent='';
  const rr=[['オーナー取り分',rLo.owner,r.owner,rHi.owner,true],
            ['キャスト合計',rLo.cast,r.cast,rHi.cast,true],
            ['バック総額',rLo.back,r.back,rHi.back,true],
