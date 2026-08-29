@@ -79,10 +79,11 @@ details[open] summary::after{content:"▴"}
 <summary>大入りボーナス 分配</summary>
 <div class="inner">
 <div class="setrow"><label>大入り キャスト原資(月)</label><span><input type="number" id="s-oiripool" value="300000" step="50000"><span class="u">円</span></span></div>
+<div class="setrow"><label>土台（全員保証）<br><span class="u">出勤した全員に先に配る額</span></label><span><input type="number" id="s-oiribase" value="10000" step="5000"><span class="u">円</span></span></div>
 <div class="setrow"><label>分配方式</label><select id="s-oirimode"><option value="sales">売上貢献比</option><option value="contrib">貢献利益比(赤字=0)</option><option value="hours">勤務時間比</option></select></div>
 <div class="setrow"><label>均等ミックス<br><span class="u">チーム感を残す割合</span></label><span><input type="number" id="s-oiriflat" value="0" step="5"><span class="u">%</span></span></div>
-<div class="toggle"><input type="checkbox" id="g-oiri" checked><label>赤字キャストは大入り分配ゼロ<small>赤字の子を除き、その分を黒字の子へ再配分（貢献利益比では自動でゼロ）</small></label></div>
-<div class="note">大入り原資（＝店の超過利益×キャスト%）をキャスト内で配る方式。配り方を変えても店・オーナーの取り分・損益分岐は不変。均等ミックス%は「全員で山分け」する割合（残りを選んだ方式で配分）。</div>
+<div class="toggle"><input type="checkbox" id="g-oiri" checked><label>赤字キャストは<b>成績配分</b>ゼロ<small>赤字の子は土台のみ。残り(成績分)は黒字の子へ再配分</small></label></div>
+<div class="note">大入り原資をキャスト内で配る方式。まず出勤者全員に「土台」を保証し、残りを選んだ方式で配分。配り方を変えても店・オーナーの取り分・損益分岐は不変。均等ミックス%は残り(成績分)のうち全員で山分けする割合。</div>
 </div>
 </details>
 
@@ -169,14 +170,17 @@ function calcCast(c){
 function render(){
  const box=$('casts'); box.innerHTML='';
  const rs=casts.map(c=>calcCast(c));
- // ---- 大入り分配(2パス) ----
- const pool=num('s-oiripool'), mode=$('s-oirimode').value, flat=Math.max(0,Math.min(100,num('s-oiriflat')))/100, guard=$('g-oiri').checked;
+ // ---- 大入り分配(2パス): 土台(全員保証) + 残り(成績) ----
+ const pool=num('s-oiripool'), base=num('s-oiribase'), mode=$('s-oirimode').value, flat=Math.max(0,Math.min(100,num('s-oiriflat')))/100, guard=$('g-oiri').checked;
+ const worked=rs.map(r=>r.hours>0?1:0); const floorN=worked.reduce((a,b)=>a+b,0);
+ const floorTotal=Math.min(pool, base*floorN); const floorEach=floorN>0?floorTotal/floorN:0;
+ const remainder=Math.max(0, pool-floorTotal);
  const elig=rs.map(r=>(guard&&!r.positive)?0:1);
  const eligN=elig.reduce((a,b)=>a+b,0)||1;
  let denom=0;
  const w=rs.map((r,i)=>{let x; if(mode==='contrib')x=Math.max(0,r.contrib); else if(mode==='hours')x=elig[i]*r.hours; else x=elig[i]*r.sales; denom+=x; return x;});
- const flatPool=pool*flat, varPool=pool*(1-flat);
- rs.forEach((r,i)=>{const vs=denom>0?varPool*w[i]/denom:0; const fs=flatPool*elig[i]/eligN; r.oiri=vs+fs;});
+ const flatPool=remainder*flat, varPool=remainder*(1-flat);
+ rs.forEach((r,i)=>{const vs=denom>0?varPool*w[i]/denom:0; const fs=flatPool*elig[i]/eligN; r.oiriFloor=worked[i]*floorEach; r.oiriVar=vs+fs; r.oiri=r.oiriFloor+r.oiriVar;});
  // ---- 描画 ----
  let tContrib=0,tTake=0,tSales=0,tOiri=0;
  rs.forEach((r,i)=>{
@@ -202,7 +206,7 @@ function render(){
     <div>バック計<b>${yen(r.back)}</b></div>
     <div>時給<b>${yen(r.wage)}</b></div>
     <div>手当<b>${r.tedate>0?yen(r.tedate):'—(ガード)'}</b></div>
-    <div>大入り<b class="${r.oiri>0?'g':''}">${r.oiri>0?yen(r.oiri):(elig[i]?'¥0':'—(赤字)')}</b></div>
+    <div>大入り<b class="${r.oiri>0?'g':''}">${yen(r.oiri)}${(r.oiriVar<1&&r.oiriFloor>0)?'(土台のみ)':''}</b></div>
     <div>B/S実効率<b>${r.effBC.toFixed(0)}%</b></div>
    </div>
    <button class="delc" data-del="${i}">この子を削除</button>`;
@@ -224,7 +228,7 @@ document.addEventListener('input',e=>{if(e.target.id&&(e.target.id.startsWith('s
 document.addEventListener('change',e=>{if(e.target.id==='s-oirimode'){render();saveLocal();}});
 // 保存/復元
 const SKEY='sakuragi-castpl-v1';
-const SIDS=['s-wage','s-kin','s-sei','s-setp','s-dp','s-shp','c-set','c-drink','c-bc','c-shot','c-ovar','b-drink','b-shot','t1','r1','t2','r2','r3','s-oiripool','s-oiriflat'];
+const SIDS=['s-wage','s-kin','s-sei','s-setp','s-dp','s-shp','c-set','c-drink','c-bc','c-shot','c-ovar','b-drink','b-shot','t1','r1','t2','r2','r3','s-oiripool','s-oiribase','s-oiriflat'];
 const GIDS=['g-tedate','g-tier','g-oiri'];
 function getState(){const o={casts};SIDS.forEach(id=>o[id]=$(id).value);GIDS.forEach(id=>o[id]=$(id).checked);o['s-oirimode']=$('s-oirimode').value;return o;}
 function setState(o){if(!o)return;SIDS.forEach(id=>{if(o[id]!=null)$(id).value=o[id];});GIDS.forEach(id=>{if(o[id]!=null)$(id).checked=o[id];});if(o['s-oirimode']!=null)$('s-oirimode').value=o['s-oirimode'];if(Array.isArray(o.casts))casts=o.casts;}
