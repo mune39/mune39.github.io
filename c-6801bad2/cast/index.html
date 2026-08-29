@@ -80,7 +80,7 @@ details[open] summary::after{content:"▴"}
 <div class="inner">
 <div class="setrow"><label>大入り キャスト原資(月)</label><span><input type="number" id="s-oiripool" value="300000" step="50000"><span class="u">円</span></span></div>
 <div class="setrow"><label>土台（全員保証）<br><span class="u">出勤した全員に先に配る額</span></label><span><input type="number" id="s-oiribase" value="10000" step="5000"><span class="u">円</span></span></div>
-<div class="setrow"><label>分配方式</label><select id="s-oirimode"><option value="sales">売上貢献比</option><option value="contrib">貢献利益比(赤字=0)</option><option value="hours">勤務時間比</option></select></div>
+<div class="setrow"><label>分配方式</label><select id="s-oirimode"><option value="contrib">貢献利益比(店に残した利益で配分・推奨)</option><option value="sales">売上貢献比(ボトル除外)</option><option value="hours">勤務時間比</option></select></div>
 <div class="setrow"><label>均等ミックス<br><span class="u">チーム感を残す割合</span></label><span><input type="number" id="s-oiriflat" value="0" step="5"><span class="u">%</span></span></div>
 <div class="toggle"><input type="checkbox" id="g-oiri" checked><label>赤字キャストは<b>成績配分</b>ゼロ<small>赤字の子は土台のみ。残り(成績分)は黒字の子へ再配分</small></label></div>
 <div class="note">大入り原資をキャスト内で配る方式。まず出勤者全員に「土台」を保証し、残りを選んだ方式で配分。配り方を変えても店・オーナーの取り分・損益分岐は不変。均等ミックス%は残り(成績分)のうち全員で山分けする割合。</div>
