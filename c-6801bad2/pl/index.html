@@ -1,0 +1,99 @@
+<title>収益シミュレーション 比較表</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{--bg:#F4F2ED;--card:#FFFFFF;--ink:#1B1C22;--sub:#6E7080;--line:#E4DFD5;--accent:#9E3B54;
+ --g1:#e5f2ea;--g2:#bfe3cd;--g3:#7fce9f;--g4:#2f9e63;--r1:#f7e0e3;--r2:#f0b8bf;--r3:#e07f8c}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111218;--card:#1D1E26;--ink:#ECEDF3;--sub:#9092A0;--line:#2C2E3C;--accent:#DE7D93;
+ --g1:#17301f;--g2:#1e4a30;--g3:#2f7a4d;--g4:#4fbf82;--r1:#3a1c20;--r2:#5c2b31;--r3:#b23a48}}
+:root[data-theme="dark"]{--bg:#111218;--card:#1D1E26;--ink:#ECEDF3;--sub:#9092A0;--line:#2C2E3C;--accent:#DE7D93;
+ --g1:#17301f;--g2:#1e4a30;--g3:#2f7a4d;--g4:#4fbf82;--r1:#3a1c20;--r2:#5c2b31;--r3:#b23a48}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;font-size:15px;line-height:1.5;padding:20px 12px 60px}
+.wrap{max-width:640px;margin:0 auto}
+h1{font-size:1.3rem;font-weight:800;text-align:center;margin-bottom:2px}
+.sub{text-align:center;color:var(--sub);font-size:.8rem;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 14px;margin-bottom:16px;overflow-x:auto}
+h2{font-size:1rem;font-weight:800;margin-bottom:12px;color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:min-content}
+th,td{padding:9px 8px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left;font-weight:700}
+thead th{color:var(--sub);font-size:.74rem;border-bottom:2px solid var(--line)}
+.mg{position:relative}
+.mgbar{display:inline-block;height:10px;border-radius:5px;background:var(--accent);opacity:.75;vertical-align:middle;margin-right:8px}
+td.num{font-weight:700}
+td.g1{background:var(--g1)}td.g2{background:var(--g2)}td.g3{background:var(--g3);color:#fff}td.g4{background:var(--g4);color:#fff}
+td.r1{background:var(--r1)}td.r2{background:var(--r2)}td.r3{background:var(--r3);color:#fff}
+.legend{display:flex;gap:6px;flex-wrap:wrap;font-size:.72rem;color:var(--sub);margin-top:10px;align-items:center}
+.sw{display:inline-block;width:16px;height:12px;border-radius:3px;vertical-align:middle;margin-right:3px}
+.note{font-size:.76rem;color:var(--sub);line-height:1.7;margin-top:6px}
+.note b{color:var(--ink)}
+.be{text-align:center;font-size:1.05rem;font-weight:800;margin-top:10px}
+.be span{color:var(--accent)}
+</style>
+<div class="wrap">
+<h1>収益シミュレーション 比較表</h1>
+<div class="sub">ショット¥300・55%上限5本・消費税2割特例・固定費155万（2026-08-29）</div>
+
+<div class="card">
+<h2>① カテゴリ別 店の粗利率（固定費前）</h2>
+<table>
+<thead><tr><th>カテゴリ</th><th>粗利率</th><th>原価/バック</th></tr></thead>
+<tbody>
+<tr><td>セット</td><td class="mg"><span class="mgbar" style="width:120px"></span><b>75%</b></td><td>7 / 10(呼び)</td></tr>
+<tr><td>コカボム</td><td class="mg"><span class="mgbar" style="width:91px"></span><b>57%</b></td><td>20 / 15(¥300)</td></tr>
+<tr><td>テキーラ</td><td class="mg"><span class="mgbar" style="width:83px"></span><b>52%</b></td><td>20 / 20(¥300)</td></tr>
+<tr><td>ドリンク</td><td class="mg"><span class="mgbar" style="width:76px"></span><b>47%</b></td><td>17 / 28(¥250)</td></tr>
+<tr><td>ボトル/泡</td><td class="mg"><span class="mgbar" style="width:48px"></span><b>30%</b></td><td>22 / 40</td></tr>
+</tbody>
+</table>
+<div class="note"><b>組数（セット）が最も儲かり、ボトルが最も薄い。</b>店の利益は集客・ドリンク/ショット回転で作る。</div>
+</div>
+
+<div class="card">
+<h2>② 売上パターン別 オーナー利益（月次）</h2>
+<table>
+<thead><tr><th>売上の構成</th><th>300万</th><th>400万</th><th>500万</th></tr></thead>
+<tbody>
+<tr><td>バランス</td><td class="num g2">+93,855</td><td class="num g3">+522,521</td><td class="num g4">+879,036</td></tr>
+<tr><td>組数多・D少<br><small style="color:var(--sub);font-weight:400">セット厚</small></td><td class="num g3">+270,855</td><td class="num g4">+675,921</td><td class="num g4">+1,070,786</td></tr>
+<tr><td>組数少・ボトル多</td><td class="num r3">▲201,645</td><td class="num g2">+248,339</td><td class="num g3">+558,911</td></tr>
+<tr><td>組数少・ショット中心</td><td class="num g2">+111,355</td><td class="num g3">+537,687</td><td class="num g4">+897,994</td></tr>
+</tbody>
+</table>
+<div class="legend">
+<span><span class="sw" style="background:var(--r3)"></span>赤字</span>
+<span><span class="sw" style="background:var(--g2)"></span>小</span>
+<span><span class="sw" style="background:var(--g3)"></span>中</span>
+<span><span class="sw" style="background:var(--g4)"></span>大</span>
+<span style="margin-left:auto">同じ月商でも構成で数十万の差</span>
+</div>
+<div class="be">損益分岐 ≒ <span>283万</span></div>
+<div class="note"><b>300万でボトル多以外は黒字。</b>ボトル多だけ▲20万（約370万で分岐）。<b>ボトルは「キャストが稼ぐ枠」で店の利益源ではない。</b></div>
+</div>
+
+<div class="card">
+<h2>③ 前回 → 今回 の改善</h2>
+<table>
+<thead><tr><th>項目</th><th>前回</th><th>今回</th></tr></thead>
+<tbody>
+<tr><td>バランス 300万</td><td class="num r1">▲48,763</td><td class="num g2">+93,855</td></tr>
+<tr><td>ショット中心 300万</td><td class="num r2">▲75,673</td><td class="num g2">+111,355</td></tr>
+<tr><td>ボトル多 300万</td><td class="num r3">▲335,673</td><td class="num r2">▲201,645</td></tr>
+<tr><td>損益分岐</td><td class="num">~298万</td><td class="num g2">~283万</td></tr>
+</tbody>
+</table>
+<div class="note">改善の主因：<b>①消費税を2割特例に（19万→5.5万）②ショットバック¥400→¥300 ③固定費↓（深夜割増を賃金で吸収）</b>。<b>バック微調整より消費税の方式選択のインパクトが最大。</b></div>
+</div>
+
+<div class="card">
+<h2>前提</h2>
+<div class="note">
+・セット60分¥4,000税サ込／構成比は各パターンの想定。<br>
+・バック：呼び10%(セット)・ドリンク¥250/杯・ショット¥300/本・ボトル加重40%（55%は総売上70万+の高額順5本まで＝稀）。<br>
+・固定費155万（基本給+手当+店長25万+店舗34万+運営12万）。<br>
+・消費税＝2割特例（売上×1.82%）。免税なら各セル+5.5〜9万、本則課税なら悪化。<br>
+・オーナー利益＝事業所得（税・社保 前）。手残りは約6〜7割。
+</div>
+</div>
+</div>
