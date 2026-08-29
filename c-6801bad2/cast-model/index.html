@@ -1,0 +1,92 @@
+<title>キャスト収益モデル</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{--bg:#F4F2ED;--card:#FFFFFF;--ink:#1B1C22;--sub:#6E7080;--line:#E4DFD5;--accent:#2E6F73;
+ --g1:#e5f2ea;--g2:#bfe3cd;--g3:#7fce9f;--g4:#2f9e63}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111218;--card:#1D1E26;--ink:#ECEDF3;--sub:#9092A0;--line:#2C2E3C;--accent:#5FB3B8;--g1:#17301f;--g2:#1e4a30;--g3:#2f7a4d;--g4:#4fbf82}}
+:root[data-theme="dark"]{--bg:#111218;--card:#1D1E26;--ink:#ECEDF3;--sub:#9092A0;--line:#2C2E3C;--accent:#5FB3B8;--g1:#17301f;--g2:#1e4a30;--g3:#2f7a4d;--g4:#4fbf82}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;font-size:15px;line-height:1.5;padding:20px 12px 60px}
+.wrap{max-width:660px;margin:0 auto}
+h1{font-size:1.3rem;font-weight:800;text-align:center;margin-bottom:2px}
+.sub{text-align:center;color:var(--sub);font-size:.8rem;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 14px;margin-bottom:16px;overflow-x:auto}
+h2{font-size:1rem;font-weight:800;margin-bottom:4px;color:var(--accent)}
+.h2note{font-size:.76rem;color:var(--sub);margin-bottom:12px}
+table{border-collapse:collapse;width:100%;font-size:.85rem;min-width:min-content}
+th,td{padding:9px 8px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left;font-weight:700}
+thead th{color:var(--sub);font-size:.72rem;border-bottom:2px solid var(--line)}
+td.num{font-weight:700}
+td .eff{display:block;font-size:.68rem;font-weight:500;opacity:.8}
+td.g1{background:var(--g1)}td.g2{background:var(--g2)}td.g3{background:var(--g3);color:#fff}td.g4{background:var(--g4);color:#fff}
+.brk{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.brow{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:.85rem;padding:6px 2px;border-bottom:1px solid var(--line)}
+.brow span{color:var(--sub)} .brow b{font-variant-numeric:tabular-nums}
+.brow.sum{border-bottom:none;border-top:2px solid var(--line);margin-top:2px;padding-top:8px}
+.brow.sum span,.brow.sum b{color:var(--accent);font-weight:800;font-size:1rem}
+.note{font-size:.76rem;color:var(--sub);line-height:1.7;margin-top:8px}
+.note b{color:var(--ink)}
+.big{text-align:center;font-size:.9rem;margin-top:8px}
+.big b{color:var(--accent);font-size:1.1rem}
+</style>
+<div class="wrap">
+<h1>キャスト収益モデル（1人あたり月）</h1>
+<div class="sub">出勤日数 × タイプ（ドリンク/バランス/ボトル）・基本時給¥1,600（2026-08-29）</div>
+
+<div class="card">
+<h2>① タイプ×出勤日数 別 手取り</h2>
+<div class="h2note">数字＝月の手取り／下段＝実効時給。基本給・呼び・ドリンク/ショット/ボトルバック・手当を合算（大入りは別途上乗せ）。</div>
+<table>
+<thead><tr><th>タイプ</th><th>少(12日)</th><th>標準(20日)</th><th>フル(26日)</th></tr></thead>
+<tbody>
+<tr><td>ドリンク型<br><span class="note" style="margin:0">飲ませ屋・ボトル少</span></td>
+ <td class="num g1">¥122,400<span class="eff">実効¥2,550</span></td>
+ <td class="num g2">¥244,000<span class="eff">¥3,050</span></td>
+ <td class="num g3">¥305,200<span class="eff">¥2,935</span></td></tr>
+<tr><td>バランス<br><span class="note" style="margin:0">ドリンク＋ボトル</span></td>
+ <td class="num g2">¥169,800<span class="eff">¥3,538</span></td>
+ <td class="num g3">¥319,000<span class="eff">¥3,988</span></td>
+ <td class="num g4">¥420,400<span class="eff">¥4,042</span></td></tr>
+<tr><td>ボトル型<br><span class="note" style="margin:0">高額狙い・ボトル多</span></td>
+ <td class="num g3">¥243,800<span class="eff">実効¥5,079</span></td>
+ <td class="num g4">¥463,250<span class="eff">¥5,791</span></td>
+ <td class="num g4">¥585,150<span class="eff">¥5,626</span></td></tr>
+</tbody>
+</table>
+<div class="big"><b>実効時給 ¥2,550〜5,791</b> ＝ 基本給¥1,600を全パターンで大きく上回る</div>
+<div class="note"><b>ボトルを売る子ほど跳ねる（実効¥5,000超）＝頑張りが報われる設計。</b>飲ませ屋(ドリンク型)でも標準で月24万・実効¥3,050。<b>求人は「基本¥1,600」でなく「実効時給・手取り例」で見せるのが正解。</b></div>
+</div>
+
+<div class="card">
+<h2>② 手取りの内訳（バランス×標準 20日/80h の例）</h2>
+<div class="brk">
+<div class="brow"><span>基本給（¥1,600 × 80h）</span><b>¥128,000</b></div>
+<div class="brow"><span>呼びバック（担当セット×10%）</span><b>¥24,000</b></div>
+<div class="brow"><span>ドリンクバック（¥250 × 100杯）</span><b>¥25,000</b></div>
+<div class="brow"><span>ショットバック（¥300 × 20本）</span><b>¥6,000</b></div>
+<div class="brow"><span>ボトル/泡バック（40%）</span><b>¥96,000</b></div>
+<div class="brow"><span>手当（皆勤＋精勤）</span><b>¥40,000</b></div>
+<div class="brow sum"><span>手取り計</span><b>¥319,000</b></div>
+</div>
+<div class="note">基本給は約4割。<b>残りはバック（呼び・ドリンク・ボトル）と手当</b>＝働き方次第で伸びる。ボトルを1本多く売れば率区分も上がり、さらに増える。</div>
+</div>
+
+<div class="card">
+<h2>③ パターンの前提（1晩あたり）</h2>
+<table>
+<thead><tr><th>タイプ</th><th>担当客</th><th>ドリンク</th><th>ショット</th><th>¥20k+ボトル</th></tr></thead>
+<tbody>
+<tr><td>ドリンク型</td><td>3組</td><td>8杯</td><td>2本</td><td>ほぼ無し</td></tr>
+<tr><td>バランス</td><td>3組</td><td>5杯</td><td>1本</td><td>2晩に1本(¥30k)</td></tr>
+<tr><td>ボトル型</td><td>3組</td><td>3杯</td><td>1本</td><td>ほぼ毎晩(¥35k)</td></tr>
+</tbody>
+</table>
+<div class="note">
+・バック：呼び10%・ドリンク¥250/杯・ショット¥300/本・ボトル率は<b>個人月間総売上</b>で確定（〜20万30%/20〜35万35%/35〜70万40%/70万〜55%・¥20k+・高額順5本まで）。<br>
+・手当は20日以上出勤で¥40,000（黒字ガードあり）。<br>
+・<b>大入り達成金は別途上乗せ</b>（店が月間目標達成した月に、土台¥10,000＋貢献利益比で配分）。
+</div>
+</div>
+</div>
