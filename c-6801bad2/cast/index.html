@@ -111,13 +111,13 @@ details[open] summary::after{content:"▴"}
 <div class="setrow"><label>ドリンク バック</label><span><input type="number" id="b-drink" value="250" step="50"><span class="u">円/杯</span></span></div>
 <div class="setrow"><label>ショット バック</label><span><input type="number" id="b-shot" value="400" step="50"><span class="u">円/本</span></span></div>
 
-<div class="ph" style="margin-top:12px">ボトル/シャンパン 段階バック（当月累計・超過分だけ）</div>
+<div class="ph" style="margin-top:12px">ボトル/シャンパン バック率（総売上しきい値・全員固定）</div>
 <div class="tiers">
- <span class="lb">〜</span><span><input type="number" id="t1" value="5" step="1"><span class="u">万まで</span> <input type="number" id="r1" value="30" step="1"><span class="u">%</span></span>
- <span class="lb">〜</span><span><input type="number" id="t2" value="12" step="1"><span class="u">万まで</span> <input type="number" id="r2" value="40" step="1"><span class="u">%</span></span>
- <span class="lb">超過</span><span><input type="number" id="r3" value="50" step="1"><span class="u">%</span></span>
+ <span class="lb">総売上 〜</span><span><input type="number" id="bt1" value="30" step="5"><span class="u">万</span> → <input type="number" id="br0" value="30" step="1"><span class="u">%</span></span>
+ <span class="lb">〜</span><span><input type="number" id="bt2" value="50" step="5"><span class="u">万</span> → <input type="number" id="br1" value="40" step="1"><span class="u">%</span></span>
+ <span class="lb">それ以上</span><span><input type="number" id="br2" value="45" step="1"><span class="u">%</span></span>
 </div>
-<div class="note">超過分だけ累進（例：8万売ったら 最初の5万=30%、次の3万=40%）。毎月1日リセット。</div>
+<div class="note">月末の個人総売上で率を確定し、¥20,000以上のボトル/泡に適用（下段の子は基本率）。全員同一しきい値・翌月リセット。赤字ガードONなら赤字の子は基本率どまり。</div>
 </div>
 </details>
 
@@ -138,20 +138,18 @@ const DEFAULT=[
  {nm:'普通',h:60,cust:28,drink:70,bc:5,shot:8},
  {nm:'低稼働',h:60,cust:10,drink:20,bc:2,shot:3},
 ];
-function tiers(){return [[num('t1')*man,num('r1')/100],[num('t2')*man,num('r2')/100],[null,num('r3')/100]];}
-function marginal(sales,ts){let b=0,lo=0;for(const [cap,rate] of ts){const hi=cap==null?Infinity:cap;const seg=Math.max(0,Math.min(sales,hi)-lo);b+=seg*rate;lo=hi;if(sales<=hi)break;}return b;}
-function baseRate(ts){return ts[0][1];}
+function bottleRate(total){const b0=num('br0'),b1=num('br1'),b2=num('br2'),t1=num('bt1')*man,t2=num('bt2')*man;if(total>=t2)return b2;if(total>=t1)return b1;return b0;}
 function calcCast(c){
  const setRev=c.cust*num('s-setp'), dRev=c.drink*num('s-dp'), shRev=c.shot*num('s-shp'), bcRev=c.bc*man;
  const sales=setRev+dRev+bcRev+shRev;
  const cogs=setRev*num('c-set')/100+dRev*num('c-drink')/100+bcRev*num('c-bc')/100+shRev*num('c-shot')/100;
  const ovar=sales*num('c-ovar')/100;
- const ts=tiers();
- const bcBackFull=marginal(bcRev,ts);
+ const brate=bottleRate(sales);            // 総売上で率確定(全員同一しきい値)
+ const bcBackFull=bcRev*brate/100;
  const drinkBack=c.drink*num('b-drink'), shotBack=c.shot*num('b-shot');
  const wage=c.h*num('s-wage');
  // まず基本(最下段のみ)でのbcバック
- const bcBackBase=bcRev*baseRate(ts);
+ const bcBackBase=bcRev*num('br0')/100;    // 基本率(下段/赤字ガード時)
  // 手当(満額)
  const tedateFull=num('s-kin')+num('s-sei');
  // ガード前の暫定収支(基本バックのみ・手当なし)で黒字判定
@@ -224,11 +222,11 @@ function bind(){
  document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{casts.splice(+b.dataset.del,1);render();saveLocal();}));
 }
 $('addCast').addEventListener('click',()=>{casts.push({nm:'新規',h:60,cust:20,drink:50,bc:3,shot:5});render();saveLocal();});
-document.addEventListener('input',e=>{if(e.target.id&&(e.target.id.startsWith('s-')||e.target.id.startsWith('c-')||e.target.id.startsWith('b-')||e.target.id.startsWith('t')||e.target.id.startsWith('r')||e.target.id.startsWith('g-'))){render();saveLocal();}});
+document.addEventListener('input',e=>{if(e.target.id&&(e.target.id.startsWith('s-')||e.target.id.startsWith('c-')||e.target.id.startsWith('b-')||e.target.id.startsWith('t')||e.target.id.startsWith('r')||e.target.id.startsWith('bt')||e.target.id.startsWith('br')||e.target.id.startsWith('g-'))){render();saveLocal();}});
 document.addEventListener('change',e=>{if(e.target.id==='s-oirimode'){render();saveLocal();}});
 // 保存/復元
 const SKEY='sakuragi-castpl-v1';
-const SIDS=['s-wage','s-kin','s-sei','s-setp','s-dp','s-shp','c-set','c-drink','c-bc','c-shot','c-ovar','b-drink','b-shot','t1','r1','t2','r2','r3','s-oiripool','s-oiribase','s-oiriflat'];
+const SIDS=['s-wage','s-kin','s-sei','s-setp','s-dp','s-shp','c-set','c-drink','c-bc','c-shot','c-ovar','b-drink','b-shot','bt1','bt2','br0','br1','br2','s-oiripool','s-oiribase','s-oiriflat'];
 const GIDS=['g-tedate','g-tier','g-oiri'];
 function getState(){const o={casts};SIDS.forEach(id=>o[id]=$(id).value);GIDS.forEach(id=>o[id]=$(id).checked);o['s-oirimode']=$('s-oirimode').value;return o;}
 function setState(o){if(!o)return;SIDS.forEach(id=>{if(o[id]!=null)$(id).value=o[id];});GIDS.forEach(id=>{if(o[id]!=null)$(id).checked=o[id];});if(o['s-oirimode']!=null)$('s-oirimode').value=o['s-oirimode'];if(Array.isArray(o.casts))casts=o.casts;}
