@@ -109,7 +109,7 @@ details[open] summary::after{content:"▴"}
 
 <div class="ph" style="margin-top:12px">フラットバック</div>
 <div class="setrow"><label>ドリンク バック</label><span><input type="number" id="b-drink" value="250" step="50"><span class="u">円/杯</span></span></div>
-<div class="setrow"><label>ショット バック</label><span><input type="number" id="b-shot" value="400" step="50"><span class="u">円/本</span></span></div>
+<div class="setrow"><label>ショット バック</label><span><input type="number" id="b-shot" value="300" step="50"><span class="u">円/本</span></span></div>
 <div class="setrow"><label>呼びバック<br><span class="u">呼んだ客のセット額に対して</span></label><span><input type="number" id="b-yobi" value="10" step="1"><span class="u">%</span></span></div>
 
 <div class="ph" style="margin-top:12px">ボトル/シャンパン バック率（総売上しきい値・全員固定）</div>
@@ -119,6 +119,7 @@ details[open] summary::after{content:"▴"}
  <span class="lb">〜</span><span><input type="number" id="bt3" value="70" step="5"><span class="u">万</span> → <input type="number" id="br2" value="40" step="1"><span class="u">%</span></span>
  <span class="lb">それ以上(プレミアム)</span><span><input type="number" id="br3" value="55" step="1"><span class="u">%</span></span>
 </div>
+<div class="setrow"><label>最上位率(55%)の上限本数<br><span class="u">高額順・超過分は1つ下の率</span></label><span><input type="number" id="s-cap" value="5" step="1"><span class="u">本</span></span></div>
 <div class="note">月末の個人総売上で率を確定し、¥20,000以上のボトル/泡に適用（下段の子は基本率）。全員同一しきい値・翌月リセット。赤字ガードONなら赤字の子は基本率どまり。</div>
 </div>
 </details>
@@ -135,10 +136,10 @@ const num=id=>{const e=$(id);if(!e)return 0;const v=parseFloat(e.value);return i
 const man=10000;
 let casts=[];
 const DEFAULT=[
- {nm:'トップ',h:100,cust:45,drink:220,bc:17,shot:40},
- {nm:'中堅',h:80,cust:35,drink:130,bc:10,shot:20},
- {nm:'普通',h:60,cust:28,drink:70,bc:5,shot:8},
- {nm:'低稼働',h:60,cust:10,drink:20,bc:2,shot:3},
+ {nm:'トップ',h:100,cust:45,drink:220,bc:17,bcN:6,shot:40},
+ {nm:'中堅',h:80,cust:35,drink:130,bc:10,bcN:4,shot:20},
+ {nm:'普通',h:60,cust:28,drink:70,bc:5,bcN:2,shot:8},
+ {nm:'低稼働',h:60,cust:10,drink:20,bc:2,bcN:1,shot:3},
 ];
 function bottleRate(total){const b0=num('br0'),b1=num('br1'),b2=num('br2'),b3=num('br3'),t1=num('bt1')*man,t2=num('bt2')*man,t3=num('bt3')*man;if(total>=t3)return b3;if(total>=t2)return b2;if(total>=t1)return b1;return b0;}
 function calcCast(c){
@@ -147,7 +148,10 @@ function calcCast(c){
  const cogs=setRev*num('c-set')/100+dRev*num('c-drink')/100+bcRev*num('c-bc')/100+shRev*num('c-shot')/100;
  const ovar=sales*num('c-ovar')/100;
  const brate=bottleRate(sales);            // 総売上で率確定(全員同一しきい値)
- const bcBackFull=bcRev*brate/100;
+ const topR=num('br3'), prevR=num('br2'), cap=num('s-cap'), cnt=c.bcN||0;
+ let bcBackFull;
+ if(brate>=topR && cnt>cap && cnt>0){ bcBackFull=bcRev*(cap/cnt)*topR/100 + bcRev*((cnt-cap)/cnt)*prevR/100; }
+ else { bcBackFull=bcRev*brate/100; }
  const drinkBack=c.drink*num('b-drink'), shotBack=c.shot*num('b-shot'), yobiBack=setRev*num('b-yobi')/100;
  const wage=c.h*num('s-wage');
  // まず基本(最下段のみ)でのbcバック
@@ -197,6 +201,7 @@ function render(){
     <div class="fld"><label>担当客数</label><input type="number" data-i="${i}" data-k="cust" value="${c.cust}" step="1"></div>
     <div class="fld"><label>ドリンク杯</label><input type="number" data-i="${i}" data-k="drink" value="${c.drink}" step="5"></div>
     <div class="fld"><label>ボトル/泡(万)</label><input type="number" data-i="${i}" data-k="bc" value="${c.bc}" step="1"></div>
+    <div class="fld"><label>¥20k+本数</label><input type="number" data-i="${i}" data-k="bcN" value="${c.bcN}" step="1"></div>
     <div class="fld"><label>ショット本</label><input type="number" data-i="${i}" data-k="shot" value="${c.shot}" step="1"></div>
     <div class="fld"><label>帰属売上</label><input value="${yen(r.sales)}" disabled style="opacity:.7"></div>
    </div>
@@ -224,12 +229,12 @@ function bind(){
  });
  document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{casts.splice(+b.dataset.del,1);render();saveLocal();}));
 }
-$('addCast').addEventListener('click',()=>{casts.push({nm:'新規',h:60,cust:20,drink:50,bc:3,shot:5});render();saveLocal();});
+$('addCast').addEventListener('click',()=>{casts.push({nm:'新規',h:60,cust:20,drink:50,bc:3,bcN:1,shot:5});render();saveLocal();});
 document.addEventListener('input',e=>{if(e.target.id&&(e.target.id.startsWith('s-')||e.target.id.startsWith('c-')||e.target.id.startsWith('b-')||e.target.id.startsWith('t')||e.target.id.startsWith('r')||e.target.id.startsWith('bt')||e.target.id.startsWith('br')||e.target.id.startsWith('g-'))){render();saveLocal();}});
 document.addEventListener('change',e=>{if(e.target.id==='s-oirimode'){render();saveLocal();}});
 // 保存/復元
 const SKEY='sakuragi-castpl-v1';
-const SIDS=['s-wage','s-kin','s-sei','s-setp','s-dp','s-shp','c-set','c-drink','c-bc','c-shot','c-ovar','b-drink','b-shot','b-yobi','bt1','bt2','bt3','br0','br1','br2','br3','s-oiripool','s-oiribase','s-oiriflat'];
+const SIDS=['s-wage','s-kin','s-sei','s-setp','s-dp','s-shp','c-set','c-drink','c-bc','c-shot','c-ovar','b-drink','b-shot','b-yobi','bt1','bt2','bt3','br0','br1','br2','br3','s-cap','s-oiripool','s-oiribase','s-oiriflat'];
 const GIDS=['g-tedate','g-tier','g-oiri'];
 function getState(){const o={casts};SIDS.forEach(id=>o[id]=$(id).value);GIDS.forEach(id=>o[id]=$(id).checked);o['s-oirimode']=$('s-oirimode').value;return o;}
 function setState(o){if(!o)return;SIDS.forEach(id=>{if(o[id]!=null)$(id).value=o[id];});GIDS.forEach(id=>{if(o[id]!=null)$(id).checked=o[id];});if(o['s-oirimode']!=null)$('s-oirimode').value=o['s-oirimode'];if(Array.isArray(o.casts))casts=o.casts;}
