@@ -110,6 +110,7 @@ details[open] summary::after{content:"▴"}
 <div class="ph" style="margin-top:12px">フラットバック</div>
 <div class="setrow"><label>ドリンク バック</label><span><input type="number" id="b-drink" value="250" step="50"><span class="u">円/杯</span></span></div>
 <div class="setrow"><label>ショット バック</label><span><input type="number" id="b-shot" value="400" step="50"><span class="u">円/本</span></span></div>
+<div class="setrow"><label>呼びバック<br><span class="u">呼んだ客のセット額に対して</span></label><span><input type="number" id="b-yobi" value="10" step="1"><span class="u">%</span></span></div>
 
 <div class="ph" style="margin-top:12px">ボトル/シャンパン バック率（総売上しきい値・全員固定）</div>
 <div class="tiers">
@@ -147,23 +148,23 @@ function calcCast(c){
  const ovar=sales*num('c-ovar')/100;
  const brate=bottleRate(sales);            // 総売上で率確定(全員同一しきい値)
  const bcBackFull=bcRev*brate/100;
- const drinkBack=c.drink*num('b-drink'), shotBack=c.shot*num('b-shot');
+ const drinkBack=c.drink*num('b-drink'), shotBack=c.shot*num('b-shot'), yobiBack=setRev*num('b-yobi')/100;
  const wage=c.h*num('s-wage');
  // まず基本(最下段のみ)でのbcバック
  const bcBackBase=bcRev*num('br0')/100;    // 基本率(下段/赤字ガード時)
  // 手当(満額)
  const tedateFull=num('s-kin')+num('s-sei');
  // ガード前の暫定収支(基本バックのみ・手当なし)で黒字判定
- const provContrib=sales-cogs-ovar-(drinkBack+shotBack+bcBackBase)-wage;
+ const provContrib=sales-cogs-ovar-(drinkBack+shotBack+yobiBack+bcBackBase)-wage;
  const positive=provContrib>=0;
  // ガード適用
  const gTier=$('g-tier').checked, gTed=$('g-tedate').checked;
  const bcBack=(gTier&&!positive)?bcBackBase:bcBackFull;
  const tedate=(gTed&&!positive)?0:tedateFull;
- const back=drinkBack+shotBack+bcBack;
+ const back=drinkBack+shotBack+yobiBack+bcBack;
  const take=wage+back+tedate;                 // 本人手取り
  const contrib=sales-cogs-ovar-back-tedate-wage; // 店の収支
- return {sales,cogs,ovar,back,bcBack,bcBackFull,drinkBack,shotBack,wage,tedate,take,contrib,positive,hours:c.h,
+ return {sales,salesExB:sales-bcRev,cogs,ovar,back,bcBack,bcBackFull,drinkBack,shotBack,yobiBack,wage,tedate,take,contrib,positive,hours:c.h,
    effBC:bcRev>0?bcBack/bcRev*100:0};
 }
 function render(){
@@ -177,7 +178,7 @@ function render(){
  const elig=rs.map(r=>(guard&&!r.positive)?0:1);
  const eligN=elig.reduce((a,b)=>a+b,0)||1;
  let denom=0;
- const w=rs.map((r,i)=>{let x; if(mode==='contrib')x=Math.max(0,r.contrib); else if(mode==='hours')x=elig[i]*r.hours; else x=elig[i]*r.sales; denom+=x; return x;});
+ const w=rs.map((r,i)=>{let x; if(mode==='contrib')x=Math.max(0,r.contrib); else if(mode==='hours')x=elig[i]*r.hours; else x=elig[i]*r.salesExB; denom+=x; return x;});
  const flatPool=remainder*flat, varPool=remainder*(1-flat);
  rs.forEach((r,i)=>{const vs=denom>0?varPool*w[i]/denom:0; const fs=flatPool*elig[i]/eligN; r.oiriFloor=worked[i]*floorEach; r.oiriVar=vs+fs; r.oiri=r.oiriFloor+r.oiriVar;});
  // ---- 描画 ----
@@ -205,6 +206,7 @@ function render(){
     <div>バック計<b>${yen(r.back)}</b></div>
     <div>時給<b>${yen(r.wage)}</b></div>
     <div>手当<b>${r.tedate>0?yen(r.tedate):'—(ガード)'}</b></div>
+    <div>呼びバック<b>${yen(r.yobiBack)}</b></div>
     <div>大入り<b class="${r.oiri>0?'g':''}">${yen(r.oiri)}${(r.oiriVar<1&&r.oiriFloor>0)?'(土台のみ)':''}</b></div>
     <div>B/S実効率<b>${r.effBC.toFixed(0)}%</b></div>
    </div>
@@ -227,7 +229,7 @@ document.addEventListener('input',e=>{if(e.target.id&&(e.target.id.startsWith('s
 document.addEventListener('change',e=>{if(e.target.id==='s-oirimode'){render();saveLocal();}});
 // 保存/復元
 const SKEY='sakuragi-castpl-v1';
-const SIDS=['s-wage','s-kin','s-sei','s-setp','s-dp','s-shp','c-set','c-drink','c-bc','c-shot','c-ovar','b-drink','b-shot','bt1','bt2','bt3','br0','br1','br2','br3','s-oiripool','s-oiribase','s-oiriflat'];
+const SIDS=['s-wage','s-kin','s-sei','s-setp','s-dp','s-shp','c-set','c-drink','c-bc','c-shot','c-ovar','b-drink','b-shot','b-yobi','bt1','bt2','bt3','br0','br1','br2','br3','s-oiripool','s-oiribase','s-oiriflat'];
 const GIDS=['g-tedate','g-tier','g-oiri'];
 function getState(){const o={casts};SIDS.forEach(id=>o[id]=$(id).value);GIDS.forEach(id=>o[id]=$(id).checked);o['s-oirimode']=$('s-oirimode').value;return o;}
 function setState(o){if(!o)return;SIDS.forEach(id=>{if(o[id]!=null)$(id).value=o[id];});GIDS.forEach(id=>{if(o[id]!=null)$(id).checked=o[id];});if(o['s-oirimode']!=null)$('s-oirimode').value=o['s-oirimode'];if(Array.isArray(o.casts))casts=o.casts;}
