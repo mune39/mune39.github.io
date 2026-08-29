@@ -34,6 +34,7 @@ h1{font-size:1.3rem;font-weight:800;text-align:center;margin-bottom:2px}
 .setrow label{color:var(--sub);flex:1}
 .setrow input{width:82px;padding:7px 8px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.98rem;text-align:right;font-variant-numeric:tabular-nums}
 .setrow .u{color:var(--sub);font-size:.8rem;margin-left:3px}
+select{padding:7px 10px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.95rem}
 .tiers{display:grid;grid-template-columns:auto 1fr;gap:6px 8px;align-items:center;font-size:.86rem}
 .tiers .lb{color:var(--sub)}
 .tiers input{width:70px;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
@@ -71,6 +72,17 @@ details[open] summary::after{content:"▴"}
 <div class="toggle"><input type="checkbox" id="g-tedate" checked><label>手当（皆勤・精勤）は<b>黒字の子だけ</b><small>月間収支が赤字の子には手当を付けない</small></label></div>
 <div class="toggle"><input type="checkbox" id="g-tier" checked><label>昇段の<b>上位バック</b>は黒字の子だけ<small>本人収支が赤字なら最下段の率どまり（安全弁）</small></label></div>
 <div class="note">※ 基本バック（歩合）は常に支給。ガードは「固定の手当」と「昇段の上乗せ分」だけに効きます。</div>
+</div>
+</details>
+
+<details open>
+<summary>大入りボーナス 分配</summary>
+<div class="inner">
+<div class="setrow"><label>大入り キャスト原資(月)</label><span><input type="number" id="s-oiripool" value="300000" step="50000"><span class="u">円</span></span></div>
+<div class="setrow"><label>分配方式</label><select id="s-oirimode"><option value="sales">売上貢献比</option><option value="contrib">貢献利益比(赤字=0)</option><option value="hours">勤務時間比</option></select></div>
+<div class="setrow"><label>均等ミックス<br><span class="u">チーム感を残す割合</span></label><span><input type="number" id="s-oiriflat" value="0" step="5"><span class="u">%</span></span></div>
+<div class="toggle"><input type="checkbox" id="g-oiri" checked><label>赤字キャストは大入り分配ゼロ<small>赤字の子を除き、その分を黒字の子へ再配分（貢献利益比では自動でゼロ）</small></label></div>
+<div class="note">大入り原資（＝店の超過利益×キャスト%）をキャスト内で配る方式。配り方を変えても店・オーナーの取り分・損益分岐は不変。均等ミックス%は「全員で山分け」する割合（残りを選んだ方式で配分）。</div>
 </div>
 </details>
 
@@ -151,15 +163,26 @@ function calcCast(c){
  const back=drinkBack+shotBack+bcBack;
  const take=wage+back+tedate;                 // 本人手取り
  const contrib=sales-cogs-ovar-back-tedate-wage; // 店の収支
- return {sales,cogs,ovar,back,bcBack,bcBackFull,drinkBack,shotBack,wage,tedate,take,contrib,positive,
+ return {sales,cogs,ovar,back,bcBack,bcBackFull,drinkBack,shotBack,wage,tedate,take,contrib,positive,hours:c.h,
    effBC:bcRev>0?bcBack/bcRev*100:0};
 }
 function render(){
  const box=$('casts'); box.innerHTML='';
- let tContrib=0,tTake=0,tSales=0;
- casts.forEach((c,i)=>{
-  const r=calcCast(c);
-  tContrib+=r.contrib; tTake+=r.take; tSales+=r.sales;
+ const rs=casts.map(c=>calcCast(c));
+ // ---- 大入り分配(2パス) ----
+ const pool=num('s-oiripool'), mode=$('s-oirimode').value, flat=Math.max(0,Math.min(100,num('s-oiriflat')))/100, guard=$('g-oiri').checked;
+ const elig=rs.map(r=>(guard&&!r.positive)?0:1);
+ const eligN=elig.reduce((a,b)=>a+b,0)||1;
+ let denom=0;
+ const w=rs.map((r,i)=>{let x; if(mode==='contrib')x=Math.max(0,r.contrib); else if(mode==='hours')x=elig[i]*r.hours; else x=elig[i]*r.sales; denom+=x; return x;});
+ const flatPool=pool*flat, varPool=pool*(1-flat);
+ rs.forEach((r,i)=>{const vs=denom>0?varPool*w[i]/denom:0; const fs=flatPool*elig[i]/eligN; r.oiri=vs+fs;});
+ // ---- 描画 ----
+ let tContrib=0,tTake=0,tSales=0,tOiri=0;
+ rs.forEach((r,i)=>{
+  const c=casts[i];
+  const take=r.take+r.oiri;
+  tContrib+=r.contrib; tTake+=take; tSales+=r.sales; tOiri+=r.oiri;
   const card=document.createElement('div');
   card.className='castcard'+(r.contrib<0?' neg':'');
   card.innerHTML=`
@@ -174,11 +197,12 @@ function render(){
     <div class="fld"><label>帰属売上</label><input value="${yen(r.sales)}" disabled style="opacity:.7"></div>
    </div>
    <div class="res">
-    <div>本人手取り<b>${yen(r.take)}</b></div>
+    <div>本人手取り(大入り込)<b>${yen(take)}</b></div>
     <div>店の収支<b class="${r.contrib>=0?'g':'r'}">${yen(r.contrib)}</b></div>
     <div>バック計<b>${yen(r.back)}</b></div>
     <div>時給<b>${yen(r.wage)}</b></div>
     <div>手当<b>${r.tedate>0?yen(r.tedate):'—(ガード)'}</b></div>
+    <div>大入り<b class="${r.oiri>0?'g':''}">${r.oiri>0?yen(r.oiri):(elig[i]?'¥0':'—(赤字)')}</b></div>
     <div>B/S実効率<b>${r.effBC.toFixed(0)}%</b></div>
    </div>
    <button class="delc" data-del="${i}">この子を削除</button>`;
@@ -186,7 +210,7 @@ function render(){
  });
  $('total').innerHTML=`<div class="lab">店の合計収支（全キャスト分・手当込／店長・店舗費・大入り前）</div>
    <div class="v">${yen(tContrib)}</div>
-   <div class="sub">帰属売上計 ${yen(tSales)}／本人手取り計 ${yen(tTake)}</div>`;
+   <div class="sub">帰属売上計 ${yen(tSales)}／本人手取り計(大入り込) ${yen(tTake)}／大入り配分計 ${yen(tOiri)}</div>`;
  bind();
 }
 function bind(){
@@ -197,12 +221,13 @@ function bind(){
 }
 $('addCast').addEventListener('click',()=>{casts.push({nm:'新規',h:60,cust:20,drink:50,bc:3,shot:5});render();saveLocal();});
 document.addEventListener('input',e=>{if(e.target.id&&(e.target.id.startsWith('s-')||e.target.id.startsWith('c-')||e.target.id.startsWith('b-')||e.target.id.startsWith('t')||e.target.id.startsWith('r')||e.target.id.startsWith('g-'))){render();saveLocal();}});
+document.addEventListener('change',e=>{if(e.target.id==='s-oirimode'){render();saveLocal();}});
 // 保存/復元
 const SKEY='sakuragi-castpl-v1';
-const SIDS=['s-wage','s-kin','s-sei','s-setp','s-dp','s-shp','c-set','c-drink','c-bc','c-shot','c-ovar','b-drink','b-shot','t1','r1','t2','r2','r3'];
-const GIDS=['g-tedate','g-tier'];
-function getState(){const o={casts};SIDS.forEach(id=>o[id]=$(id).value);GIDS.forEach(id=>o[id]=$(id).checked);return o;}
-function setState(o){if(!o)return;SIDS.forEach(id=>{if(o[id]!=null)$(id).value=o[id];});GIDS.forEach(id=>{if(o[id]!=null)$(id).checked=o[id];});if(Array.isArray(o.casts))casts=o.casts;}
+const SIDS=['s-wage','s-kin','s-sei','s-setp','s-dp','s-shp','c-set','c-drink','c-bc','c-shot','c-ovar','b-drink','b-shot','t1','r1','t2','r2','r3','s-oiripool','s-oiriflat'];
+const GIDS=['g-tedate','g-tier','g-oiri'];
+function getState(){const o={casts};SIDS.forEach(id=>o[id]=$(id).value);GIDS.forEach(id=>o[id]=$(id).checked);o['s-oirimode']=$('s-oirimode').value;return o;}
+function setState(o){if(!o)return;SIDS.forEach(id=>{if(o[id]!=null)$(id).value=o[id];});GIDS.forEach(id=>{if(o[id]!=null)$(id).checked=o[id];});if(o['s-oirimode']!=null)$('s-oirimode').value=o['s-oirimode'];if(Array.isArray(o.casts))casts=o.casts;}
 function saveLocal(){try{localStorage.setItem(SKEY,JSON.stringify(getState()));}catch(e){}}
 function loadLocal(){try{return JSON.parse(localStorage.getItem(SKEY));}catch(e){return null;}}
 function b64e(s){return btoa(unescape(encodeURIComponent(s)));}
