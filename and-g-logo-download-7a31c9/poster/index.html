@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>And G 無料案内所ポスター</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #2b3942;
+      --muted: #75858f;
+      --paper: #eef1f2;
+      --white: #fff;
+      --line: #dce3e6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans JP", Arial, sans-serif;
+      -webkit-text-size-adjust: 100%;
+    }
+    header, main, footer {
+      width: min(680px, 100%);
+      margin-inline: auto;
+    }
+    header { padding: 28px 16px 18px; }
+    h1 {
+      margin: 0 0 8px;
+      font-family: "Noto Serif JP", "Yu Mincho", serif;
+      font-size: clamp(25px, 7vw, 34px);
+      font-weight: 500;
+      letter-spacing: .06em;
+    }
+    .intro {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    main { padding: 0 12px 20px; }
+    .poster-card {
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      box-shadow: 0 10px 32px rgb(45 61 70 / 8%);
+    }
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid #edf0f1;
+      background: #fff;
+    }
+    .open-image {
+      display: flex;
+      min-height: 52px;
+      margin-top: 12px;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      background: #33434c;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-decoration: none;
+      touch-action: manipulation;
+    }
+    .open-image:active { background: #65747d; }
+    footer {
+      padding: 0 16px calc(30px + env(safe-area-inset-bottom));
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>And G ポスター</h1>
+    <p class="intro">無料案内所掲載用・確認版</p>
+  </header>
+  <main>
+    <article class="poster-card">
+      <img src="images/and-g-guide-poster.png" alt="And G 無料案内所掲載用ポスター" width="2480" height="3508">
+      <a class="open-image" href="images/and-g-guide-poster.png">画像を大きく表示</a>
+    </article>
+  </main>
+  <footer>画像を長押しするとスマートフォンへ保存できます。</footer>
+</body>
+</html>
